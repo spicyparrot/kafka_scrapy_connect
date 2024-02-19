@@ -47,12 +47,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 🧠 Bring up Kafka KRaft cluster
-        shell: bash
-        run: |
-          ./examples/kafka/kafka_start.sh --input-topic ScrapyInput,1 --output-topic ScrapyOutput,1 --error-topic ScrapyError,1
+      # - name: 🧠 Bring up Kafka KRaft cluster
+      #   shell: bash
+      #   run: |
+      #     ./examples/kafka/kafka_start.sh --input-topic ScrapyInput,1 --output-topic ScrapyOutput,1 --error-topic ScrapyError,1
+
+      - name: 🧠 Bring up CI Kafka cluster
+        uses: spicyparrot/kafka-kraft-action@v1.0.9
+        with:
+          kafka-version: "3.6.1"
+          kafka-topics: "ScrapyInput,1,ScrapyOutput,1,ScrapyError,1"
 
       - name: 🧪 Run Crawler Unit Tests
         id: tests
         run: |
           pytest -s -v tests/test_kafka_scrapy_connect.py --disable-warnings
+        env:
+          KAFKA_BOOTSTRAP_SERVERS: ${{ env.kafka_runner_address }}:9093

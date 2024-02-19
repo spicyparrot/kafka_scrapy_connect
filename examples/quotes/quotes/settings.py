@@ -13,7 +13,7 @@ ITEM_PIPELINES = {
     }
 
 # Scrapy kafka connect settings
-SCRAPY_KAFKA_HOSTS  = os.getenv('KAFKA_BOOTSTRAP_SERVERS','localhost:29092')
+SCRAPY_KAFKA_HOSTS  = 'localhost:29092'
 SCRAPY_INPUT_TOPIC  = 'ScrapyInput'
 SCRAPY_OUTPUT_TOPIC = 'ScrapyOutput'
 SCRAPY_ERROR_TOPIC = 'ScrapyErrors'

@@ -55,4 +55,4 @@ jobs:
       - name: 🧪 Run Crawler Unit Tests
         id: tests
         run: |
-          pytest -s -v tests/test_scrapy_kafka_stream.py --disable-warnings
+          pytest -s -v tests/test_kafka_scrapy_connect.py --disable-warnings

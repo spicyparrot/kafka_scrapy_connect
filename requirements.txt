@@ -1,0 +1,4 @@
+scrapy>=2.11.0
+confluent-kafka>=2.3.0
+pytest>=8.0.1
+pytest-mock>=3.12.0

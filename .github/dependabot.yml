@@ -1,0 +1,45 @@
+version: 2
+updates:     
+  - package-ecosystem: 'pip'
+    directory: '/'
+    open-pull-requests-limit: 3
+    target-branch: 'trunk'
+    rebase-strategy: "disabled"
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+    commit-message:
+      prefix: 'deps'
+    pull-request-branch-name:
+      separator: "-"
+    groups:
+      minor-versions:
+        update-types:
+        - "minor"
+        - "patch"
+      major-versions:
+        update-types:
+        - "major"
+
+  - package-ecosystem: 'docker'
+    directory: './'
+    open-pull-requests-limit: 3
+    target-branch: 'trunk'
+    rebase-strategy: "disabled"
+    schedule:
+      interval: 'weekly'
+    labels:
+      - 'dependencies'
+    commit-message:
+      prefix: 'deps'
+    pull-request-branch-name:
+      separator: "-"
+    groups:
+      minor-versions:
+        update-types:
+        - "minor"
+        - "patch"
+      major-versions:
+        update-types:
+        - "major"

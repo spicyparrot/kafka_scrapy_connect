@@ -41,7 +41,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: 🧠 Bring up CI Kafka cluster
-        uses: spicyparrot/kafka-kraft-action@v1.0.9
+        uses: spicyparrot/kafka-kraft-action@v1.1.0
         with:
           kafka-version: "3.6.1"
           kafka-topics: "ScrapyInput,1,ScrapyOutput,1,ScrapyError,1"

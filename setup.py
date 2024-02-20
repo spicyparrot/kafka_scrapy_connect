@@ -2,16 +2,26 @@ import os
 from setuptools import setup, find_packages
 
 MY_DIR = os.path.dirname(__file__)
-LONG_DESC = open(os.path.join(MY_DIR, 'README.rst')).read()
+README_MD = open(os.path.join(MY_DIR, 'README.md')).read()
 
 setup(
     name='kafka-scrapy-connect',
-    version='1.0.0',
-    description='Integrating Scrapy with kafka using confluent-kafka lib',
-    #long_description=LONG_DESC,
+    version='1.0.1',
+    description='Integrating Scrapy with kafka using the confluent-kafka python client',
+    long_description=README_MD,
+    long_description_content_type="text/markdown",
     packages=['kafka_scrapy_connect'],
     install_requires=[
         'scrapy >= 2.11.1',
         'confluent-kafka >= 2.2.0'
     ],
+    url='https://github.com/spicyparrot/kafka_scrapy_connect',
+    classifiers = [
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11"
+    ],
+    keywords="kafka, scrapy, crawling, scraping",
 )

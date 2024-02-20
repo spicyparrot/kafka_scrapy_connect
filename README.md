@@ -1,26 +1,29 @@
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-3918) [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-31013/) [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3117/)
-## Kafka Scrapy Connect
+## 🚀 Kafka Scrapy Connect
+
+### Overview
 
 `kafka_scrapy_connect` is a custom Scrapy library that aims to integrates Scrapy with Kafka.
 
 It consists of two main components: spiders and pipelines, which interact with Kafka for message consumption and item publishing.
 
-This project has been motivated by the great work undertaken in: https://github.com/dfdeshom/scrapy-kafka. `kafka_scrapy_connect` utilises [Confluent's](https://github.com/confluentinc/confluent-kafka-python) Kafka Python client, under the hood, to provide high-level producer and consumer features.
+This project has been motivated by the great work undertaken in: https://github.com/dfdeshom/scrapy-kafka. 
+
+`kafka_scrapy_connect` utilises [Confluent's](https://github.com/confluentinc/confluent-kafka-python) Kafka Python client under the hood, to provide high-level producer and consumer features.
 ## Features
 
-- **Integration with Kafka** 📈
+1️⃣ **Integration with Kafka** 📈
   - Enables communication between Scrapy spiders and Kafka topics for efficient data processing.
   - Through partitions and consumer groups message processing can be parallelised across multiple spiders!
-  - Reduces overhead and improves throughput by giving the user the ability to consume messages in batches  📈
+  - Reduces overhead and improves throughput by giving the user the ability to consume messages in batches.
 
-  
-- **Customisable Settings** 🛠️
+2️⃣ **Customisable Settings** 🛠️
   - Provides flexibility through customisable configuration for both consumers and producers.
 
-- **Error Handling** 🚑
+3️⃣ **Error Handling** 🚑
   - Automatically handles network errors during crawling and publishes failed URLs to a designated output topic. 
 
-- **Serialisation Customisation**: 
+4️⃣ **Serialisation Customisation** 🧬
   - Allows users to customize how Kafka messages are deserializsd by overriding the process_kafka_message method.
 
 ## Installation
@@ -32,31 +35,39 @@ pip install kafka_scrapy_connect
 
 ## Example
 
-To bring up a spider using `kafka_scrapy_connect` and kafka, execute the steps below:
+A full [example](https://github.com/spicyparrot/kafka_scrapy_connect.git) using the `kafka_scrapy_connect` library can be found inside the repo.
 
-1. Create a virtual environment and install requirements
+The *only prerequisite for walking through the exampl*e is the installation of **Docker** 🐳 . 
+
+This is needed because a kafka cluster will be created locally using containers so `kafka_scrapy_connect` can communicate with a broker. 
+
+If all set, follow the below steps 👇
+
+1. Create a virtual environment, clone the repo and install requirements:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+git clone https://github.com/spicyparrot/kafka_scrapy_connect.git && cd kafka_scrapy_connect
 pip install -r requirements.txt
 ```
-
 2. Create a local kafka cluster with required topics:
 
 ```bash
-./examples/kafka/kafka_start.sh --input-topic ScrapyInput,1 --output-topic ScrapyOutput,1 --error-topic ScrapyError,1
+bash ./examples/kafka/kafka_start.sh --input-topic ScrapyInput,1 --output-topic ScrapyOutput,1 --error-topic ScrapyError,1
 ```
 
-3. Initiate spider:
+3. Initiate the spider:
 ```bash
 cd examples/quotes && scrapy crawl quotes
 ```
 
-4. Publish a message to the input kafka topic and watch the spider consume and process the mesasge 🪄
+4. Publish a message to the input kafka topic and watch the spider consume and process the mesasge 🪄 
+   1. ☝️ This will require some custom producer code to publish messages or go to https://localhost:8080 and use the UI to publish some example messages in! (*The UI was created when bringing up your local kafka cluster*)
 
-5. When you're finished, exit the spider and clean up your local kafka cluster running:
+
+5. When satisfied with testing, exit the spider and clean up the local kafka cluster:
 ```bash
-./examples/kafka/kafka_stop.sh
+bash ./examples/kafka/kafka_stop.sh
 ```
 
 ## Usage
@@ -89,7 +100,7 @@ class CustomSpider(KafkaListeningSpider):
         pass
 ```
 
-⚠️ *By default*, the spider method `process_kafka_message` expects a JSON payload or a string containing a valid url. If it's a JSON object, it expects `url` in the K/V pair.
+⚠️ *By default*, if no custom `process_kafka_message` method is provided, the spider method `process_kafka_message` **will expect** a JSON payload or a string containing a valid url. If it's a JSON object, it expects `url` in the K/V pair.
 
 **Customising Producer & Consumer settings**
 

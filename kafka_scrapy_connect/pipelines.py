@@ -20,7 +20,6 @@ class KafkaPublishPipeline:
         self.topic = topic
         self.key = key
         self.drcb = drcb
-        self.password = 'foobar'
 
     def process_item(self, item, spider):
         """

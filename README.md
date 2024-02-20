@@ -1,37 +1,38 @@
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-3918) [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-31013/) [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3117/)
 ## Kafka Scrapy Connect
 
 `kafka_scrapy_connect` is a custom Scrapy library that aims to integrates Scrapy with Kafka.
 
 It consists of two main components: spiders and pipelines, which interact with Kafka for message consumption and item publishing.
 
-
-This project has been motivated by the great work undertaken in: https://github.com/dfdeshom/scrapy-kafka
-
+This project has been motivated by the great work undertaken in: https://github.com/dfdeshom/scrapy-kafka. `kafka_scrapy_connect` utilises [Confluent's](https://github.com/confluentinc/confluent-kafka-python) Kafka Python client, under the hood, to provide high-level producer and consumer features.
 ## Features
 
-- **Integration with Kafka**:
+- **Integration with Kafka** 📈
   - Enables communication between Scrapy spiders and Kafka topics for efficient data processing.
-  - Allows for scalability by increasing the number of spiders, thereby improving throughput.
+  - Through partitions and consumer groups message processing can be parallelised across multiple spiders!
+  - Reduces overhead and improves throughput by giving the user the ability to consume messages in batches  📈
+
   
-- **Customisable Settings**: 
+- **Customisable Settings** 🛠️
   - Provides flexibility through customisable configuration for both consumers and producers.
 
-- **Error Handling**: 
+- **Error Handling** 🚑
   - Automatically handles network errors during crawling and publishes failed URLs to a designated output topic. 
 
-- **Serialisation Customization**: 
-  - Allows users to customize how Kafka messages are deserialized by overriding the process_kafka_message method.
+- **Serialisation Customisation**: 
+  - Allows users to customize how Kafka messages are deserializsd by overriding the process_kafka_message method.
 
 ## Installation
 
-You can install kafka_scrapy_connect via pip:
+You can install `kafka_scrapy_connect` via pip:
 ```
 pip install kafka_scrapy_connect
 ```
 
 ## Example
 
-To bring up a spider using kafka_scrapy_connect and kafka, execute the steps below...
+To bring up a spider using `kafka_scrapy_connect` and kafka, execute the steps below:
 
 1. Create a virtual environment and install requirements
 ```bash
@@ -51,12 +52,11 @@ pip install -r requirements.txt
 cd examples/quotes && scrapy crawl quotes
 ```
 
-4. When you're finished, bring down your kafka cluster:
+4. Publish a message to the input kafka topic and watch the spider consume and process the mesasge 🪄
+
+5. When you're finished, exit the spider and clean up your local kafka cluster running:
 ```bash
 ./examples/kafka/kafka_stop.sh
-```
-
-# To stop the cluster
 ```
 
 ## Usage
@@ -66,10 +66,10 @@ cd examples/quotes && scrapy crawl quotes
 
 - `SCRAPY_KAFKA_HOSTS`  - A list of kafka broker hosts. (Default: `localhost:29092`)
 - `SCRAPY_INPUT_TOPIC`  - Topic from which the spider[s] *consumes* messages from. (Default: `ScrapyInput`)
-- `SCRAPY_OUTPUT_TOPIC` - Topic to which scraped items are published. (Default: `ScrapyOutput`)
+- `SCRAPY_OUTPUT_TOPIC` - Topic where scraped items are published. (Default: `ScrapyOutput`)
 - `SCRAPY_ERROR_TOPIC`  - Topic for publishing URLs that failed due to *network errors*. (Default: `ScrapyError`)
-- `SCRAPY_CONSUMER_CONFIG` - Additional configuration options for Kafka consumers.
-- `SCRAPY_PRODUCER_CONFIG` - Additional configuration options for Kafka producers.
+- `SCRAPY_CONSUMER_CONFIG` - Additional configuration options for Kafka consumers (see [here](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md))
+- `SCRAPY_PRODUCER_CONFIG` - Additional configuration options for Kafka producers (see [here](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md))
 - `SCRAPY_KAFKA_PRODUCER` - Key used for partitioning messages in Kafka producer (Default: `""` *Roundrobin*)
 - `SCRAPY_KAFKA_PRODUCER_CALLBACKS` - Enable or disable asynchronous message delivery callbacks. (Default: `False`)
 
@@ -88,6 +88,8 @@ class CustomSpider(KafkaListeningSpider):
         # Return URL, metadata or None if extraction fails
         pass
 ```
+
+⚠️ *By default*, the spider method `process_kafka_message` expects a JSON payload or a string containing a valid url. If it's a JSON object, it expects `url` in the K/V pair.
 
 **Customising Producer & Consumer settings**
 

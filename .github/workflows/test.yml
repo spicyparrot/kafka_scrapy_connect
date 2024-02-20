@@ -52,3 +52,7 @@ jobs:
           pytest -s -v --emoji tests/test_kafka_scrapy_connect.py --disable-warnings --md-report --md-report-flavor gfm --md-report-output md_report.md
         env:
           KAFKA_BOOTSTRAP_SERVERS: ${{ env.kafka_runner_address }}:9093
+
+      - name: 📋 Adding markdown table
+        run: |
+          cat md_report.md >> $GITHUB_STEP_SUMMARY

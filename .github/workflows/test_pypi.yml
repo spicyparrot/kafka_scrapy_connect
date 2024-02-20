@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-and-publish:
-    name: Build and publish Python 🐍 distributions 📦 to PyPI
+    name: Build and publish Python 🐍 distributions 📦 to testPyPI
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@master

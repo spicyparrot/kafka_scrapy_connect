@@ -1,4 +1,4 @@
-name: 🧪 TestPyPI publish
+name: 🧑‍🔬 TestPyPI publish
 
 on:
   # Triggers the workflow when a release is created
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-and-publish:
-    name: 🧪 TestPyPI publish
+    name: 🧑‍🔬 TestPyPI publish
     runs-on: ubuntu-latest
     environment: release
     permissions:

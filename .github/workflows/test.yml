@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - "**" # matches every branch  (!trunk removed to ensure main branch SonarCloud analysis is performed)
-  pull_request:
 
 env:
   ENVIRONMENT: "ci"
@@ -53,10 +52,3 @@ jobs:
           pytest -s -v --emoji tests/test_kafka_scrapy_connect.py --disable-warnings --md-report --md-report-flavor gfm --md-report-output md_report.md
         env:
           KAFKA_BOOTSTRAP_SERVERS: ${{ env.kafka_runner_address }}:9093
-
-      - name: Render reports to PR
-        #if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.number }}
-        run: gh pr comment $PR_NUMBER --body-file md_report.md

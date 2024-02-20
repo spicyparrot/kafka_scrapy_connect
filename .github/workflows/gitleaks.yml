@@ -1,8 +1,8 @@
-name: 🔐 gitleaks
-on: [pull_request, push, workflow_dispatch]
+name: 🔐 Git Leaks
+on: [pull_request]
 jobs:
   scan:
-    name: 🔐 gitleaks
+    name: 🔐 Git Leaks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

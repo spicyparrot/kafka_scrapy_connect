@@ -61,6 +61,6 @@ jobs:
       - name: 🧪 Run Crawler Unit Tests
         id: tests
         run: |
-          pytest -s -v tests/test_kafka_scrapy_connect.py --disable-warnings
+          pytest -s -v --emoji tests/test_kafka_scrapy_connect.py --disable-warnings
         env:
           KAFKA_BOOTSTRAP_SERVERS: ${{ env.kafka_runner_address }}:9093

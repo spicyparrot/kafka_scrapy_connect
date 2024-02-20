@@ -1,4 +1,4 @@
-#pytest -s -v tests/test_scrapy_kafka_stream.py --disable-warnings
+from ast import parse
 import os
 import sys
 import json
@@ -144,13 +144,12 @@ def test_parse(parse_result):
     '''
     This test verifies if the parse method of the TestSpider class correctly extracts data from an HTML response.
     '''
-    time.sleep(10)
     result = parse_result
     assert result[0]['author'] == 'Albert Einstein'
     assert result[0]['tags'] == ['change','deep-thoughts','thinking','world']
     assert len(result[0]['text']) > 1
 
-def test_pipeline_publish_to_kafka(kafka_producer,parse_result,kafka_output_message):
+def test_pipeline_publish_to_kafka(kafka_producer,parse_result,kafka_consumer):
     '''
     This test checks if the KafkaPublishPipeline's process_item method executes without errors.
     '''
@@ -158,5 +157,8 @@ def test_pipeline_publish_to_kafka(kafka_producer,parse_result,kafka_output_mess
     spider = TestSpider()
     kafka_publish_pipeline.process_item(parse_result[0],spider)
     kafka_producer.flush()
-    assert isinstance(kafka_output_message, dict)
-    assert kafka_output_message is not None, "No output message received"
+    kafka_consumer.subscribe(['ScrapyOutput'])
+    message = kafka_consumer.poll(timeout=30)
+    message = json.loads(message.value())
+    assert isinstance(message, dict)
+    assert message is not None, "No output message received"

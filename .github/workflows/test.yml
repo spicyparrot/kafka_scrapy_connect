@@ -1,0 +1,58 @@
+name: 🧪 Testing
+
+concurrency:
+  group: ${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - "**" # matches every branch  (!trunk removed to ensure main branch SonarCloud analysis is performed)
+
+env:
+  ENVIRONMENT: "ci"
+  RED: '\033[0;31m'
+  GREEN: '\033[0;32m'
+  YELLOW: '\033[0;33m'
+  PURPLE: '\033[0;35m'
+  WHITE: '\033[0m'
+
+jobs:
+  test-repo:
+    name: 👩‍💻 Unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ["3.9", "3.10", "3.11"]
+    steps:
+      - name: 🛀 Checkout Self
+        uses: actions/checkout@v4
+
+      - name: 🐍 Python Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: "pip" # caching pip dependencies
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🧠 Bring up CI Kafka cluster
+        uses: spicyparrot/kafka-kraft-action@v1.1.0
+        with:
+          kafka-version: "3.6.1"
+          kafka-topics: "ScrapyInput,1,ScrapyOutput,1,ScrapyError,1"
+
+      - name: 🧪 Run Kafka Scrapy tests
+        id: tests
+        run: |
+          pytest -s -v --emoji tests/test_kafka_scrapy_connect.py --disable-warnings --md-report --md-report-flavor gfm --md-report-output md_report.md
+        env:
+          KAFKA_BOOTSTRAP_SERVERS: ${{ env.kafka_runner_address }}:9093
+
+      - name: 📋 Adding markdown table
+        run: |
+          cat md_report.md >> $GITHUB_STEP_SUMMARY

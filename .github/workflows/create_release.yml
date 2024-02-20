@@ -1,0 +1,67 @@
+name: 📢 Create Release
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        type: choice
+        description: 🌍 Release bump
+        options:
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: create_release
+  cancel-in-progress: true
+
+env:
+  RED: '\033[0;31m'
+  GREEN: '\033[0;32m'
+  YELLOW: '\033[0;33m'
+  PURPLE: '\033[0;35m'
+  WHITE: '\033[0m'
+
+jobs:
+  #test:
+  #  name: 🔬 Test Action
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v3
+  #
+  #    - name: Check Dependabot Alerts
+  #      id: alerts
+  #      uses: spicyparrot/check-dependabot@trunk              # Check out yourself to test
+  #      with:
+  #        github_personal_token: ${{ secrets.ACTIONS_ACCESS_TOKEN }}
+
+  create_release:
+    name: 📢 Create Release
+    runs-on: ubuntu-latest
+    #needs: [test]
+    steps:
+      - name: 🛀 Checkout Self
+        uses: actions/checkout@v4.1.1
+
+      - name: 🏷 Create Tag
+        id: tag
+        uses: mathieudutour/github-tag-action@v6.1 #https://github.com/marketplace/actions/github-tag
+        with:
+          github_token: ${{ github.token }}
+          tag_prefix: "v"
+          default_bump: ${{ github.event.inputs.bump }}
+          release_branches: trunk
+
+      - name: 📢 GitHub Release
+        uses: ncipollo/release-action@v1.13.0
+        with:
+          tag: "${{ steps.tag.outputs.new_tag }}"
+          token: ${{ github.token }}
+          generateReleaseNotes: true
+          allowUpdates: true
+
+      - name: 📝 Details
+        shell: bash
+        run: |
+          echo "Release Type = ${{ steps.tag.outputs.release_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "New Tag = ${{ steps.tag.outputs.new_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "Previous Tag = ${{ steps.tag.outputs.previous_tag  }}" >> $GITHUB_STEP_SUMMARY

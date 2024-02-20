@@ -17,6 +17,7 @@ setup(
     ],
     url='https://github.com/spicyparrot/kafka_scrapy_connect',
     classifiers = [
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.9",

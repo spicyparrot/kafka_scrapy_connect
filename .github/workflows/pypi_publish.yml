@@ -1,4 +1,4 @@
-name: 🧪 TestPyPI publish
+name: 🐍 PyPi publish
 
 on:
   # Triggers the workflow when a release is created
@@ -9,9 +9,11 @@ on:
 
 jobs:
   build-and-publish:
-    name: 🧪 TestPyPI publish
+    name: 🐍 PyPi publish
     runs-on: ubuntu-latest
-    environment: release
+    environment:
+      name: pypi
+      url: https://pypi.org/p/kafka_scrapy_connect
     permissions:
       id-token: write
     steps:
@@ -37,7 +39,5 @@ jobs:
         run: >-
           python setup.py sdist bdist_wheel
 
-      - name: Publish distribution 📦 to TestPyPI
+      - name: Publish distribution 📦 to PyPi
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/

@@ -35,7 +35,7 @@ pip install kafka_scrapy_connect
 
 ## Example
 
-A full [example](https://github.com/spicyparrot/kafka_scrapy_connect.git) using the `kafka_scrapy_connect` library can be found inside the repo.
+A full [example](https://github.com/spicyparrot/kafka_scrapy_connect?tab=readme-ov-file#example) using the `kafka_scrapy_connect` library can be found inside the repo.
 
 The *only prerequisite for walking through the exampl*e is the installation of **Docker** 🐳 . 
 

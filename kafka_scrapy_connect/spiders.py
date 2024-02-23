@@ -25,7 +25,7 @@ class KafkaSpiderMixin:
         self.producer = Producer(kafka_config)
         self.network_error_topic = settings.get('SCRAPY_ERROR_TOPIC', 'ScrapyNetworkErrors')
 
-    def process_kafka_message(self, message, meta={},headers={}):
+    def process_kafka_message(self, message, meta={}):
         """
         Extracts URLs from a Kafka message.
         :param message: A Kafka message object
@@ -53,7 +53,7 @@ class KafkaSpiderMixin:
                         url = json_obj['url']
                         if self.is_valid_url(url):
                             logging.debug(f"Received valid URL => {url}")
-                            return url, meta, headers
+                            return url, meta
                         else:
                             logging.warning(f"Invalid URL => {url}")
                             return None
@@ -125,9 +125,9 @@ class KafkaSpiderMixin:
             result = self.process_kafka_message(message)
             if result is not None:
             #if request_url:
-                url,meta,headers = result
+                url,meta = result
                 logging.info(f'Crawling {url}')
-                yield Request(url=url, meta=meta,headers=headers,dont_filter=True, errback=self.network_error_cb)
+                yield Request(url=url, meta=meta,dont_filter=True, errback=self.network_error_cb)
 
     def network_error_cb(self, failure):
         error = f'Network request failure: {repr(failure)}'

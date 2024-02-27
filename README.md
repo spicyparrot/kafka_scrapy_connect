@@ -3,13 +3,16 @@
 
 ### Overview
 
-`kafka_scrapy_connect` is a custom Scrapy library that aims to integrates Scrapy with Kafka.
+`kafka_scrapy_connect` is a custom Scrapy library that integrates Scrapy with Kafka.
 
 It consists of two main components: spiders and pipelines, which interact with Kafka for message consumption and item publishing.
+
+The library also comes with a custom extension that publishes log stats to a kafka topic at EoD, which allows the user to analyse offline how well the spider is performing!
 
 This project has been motivated by the great work undertaken in: https://github.com/dfdeshom/scrapy-kafka. 
 
 `kafka_scrapy_connect` utilises [Confluent's](https://github.com/confluentinc/confluent-kafka-python) Kafka Python client under the hood, to provide high-level producer and consumer features.
+
 ## Features
 
 1️⃣ **Integration with Kafka** 📈

@@ -75,4 +75,3 @@ class KafkaPublishPipeline:
         logging.info("Flushing Kafka publish queue...")
         self.producer.flush()
         logging.info("Kafka publish queue flushed.")
-        self.producer.close()

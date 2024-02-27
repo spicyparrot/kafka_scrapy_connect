@@ -65,7 +65,7 @@ class KafkaSpiderMixin:
                     # If decoding as JSON fails, check if it's a valid URL string
                     if self.is_valid_url(message):
                         logging.debug(f"Received valid URL => {message}")
-                        return message, meta, headers
+                        return message, meta
                     else:
                         logging.warn(f"Message is not a valid URL => {message}")
                         return None
@@ -92,6 +92,7 @@ class KafkaSpiderMixin:
         """
         kafka_hosts = settings.get('SCRAPY_KAFKA_HOSTS', 'localhost:9092')
         consumer_config = settings.get('SCRAPY_CONSUMER_CONFIG', {})
+        self.batch_size = int(settings.get('SCRAPY_CONSUMER_BATCH_SIZE',1))
         kafka_config = {'bootstrap.servers': kafka_hosts, **consumer_config}
         if 'group.id' not in kafka_config:
             kafka_config['group.id'] = 'kafka-scrapy'
@@ -99,7 +100,7 @@ class KafkaSpiderMixin:
         try:
             self.consumer = Consumer(kafka_config)
             self.consumer.subscribe([topic])
-            logging.info(f'Instantiated a kafka consumer subscribed to topic: {topic} with the following configuration: {kafka_config}')
+            logging.info(f'Instantiated a kafka consumer subscribed to topic: {topic}. It will consume batches of {self.batch_size} messages with the following configuration: {kafka_config}')
         except KafkaException as e:
             logging.error(f"Failed to connect to Kafka: {e}")
             sys.exit(1)
@@ -115,8 +116,7 @@ class KafkaSpiderMixin:
         Consumes messages from Kafka.
         :rtype: scrapy.Request or None
         """
-        batch_size = int(os.getenv('KAFKA_BATCH_SIZE') or '1')
-        messages = self.consumer.consume(num_messages=batch_size, timeout=1.0)
+        messages = self.consumer.consume(num_messages=self.batch_size, timeout=1.0)
         if not messages or len(messages) == 0:
             logging.debug('No messages to process')
             return None

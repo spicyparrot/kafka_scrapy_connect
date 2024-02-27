@@ -86,6 +86,8 @@ bash ./examples/kafka/kafka_stop.sh
 
 ### Customisation
 
+---
+
 **Customising deserialisation** 
 
 You can customize how Kafka messages are deserialized by overriding the process_kafka_message method in your spider class. 
@@ -101,6 +103,8 @@ class CustomSpider(KafkaListeningSpider):
 ```
 
 ⚠️ *By default*, if no custom `process_kafka_message` method is provided, the spider method `process_kafka_message` **will expect** a JSON payload or a string containing a valid url. If it's a JSON object, it expects `url` in the K/V pair.
+
+---
 
 **Customising Producer & Consumer settings**
 
@@ -118,5 +122,44 @@ SCRAPY_CONSUMER_CONFIG = {
     'fetch.wait.max.ms': 10,
     'max.poll.interval.ms': 600000,
     'auto.offset.reset': 'latest'
+}
+```
+---
+**Custom stats extensions**
+
+`kafka_scrapy_connect` comes with a custom Scrapy stats extension that:
+1. logs basic scraping statistics every minute (*frequency can be configured by the scrapy setting* `KAFKA_LOGSTATS_INTERVAL`)
+2. At **end-of-day**, will publish logging statistics to a Kafka topic (specified by the scrapy setting `SCRAPY_STATS_TOPIC`).
+   1. Each summary message will be published with a key specifying the summary date (`2024-02-27`) for easy identification.
+3.  If the spider is shutdown or closed, due to a deployment etc, a summary payload will also be sent to a kafka topic (`SCRAPY_STATS_TOPIC`)
+
+
+To enable this custom extension, disable the standard LogStats extension and modify your `settings.py` to include the below:
+```
+# Kafka topic for capturing stats
+SCRAPY_STATS_TOPIC = 'ScrapyStats'
+
+# Disable standard logging extension (use custom kafka_scrapy_connect extension)
+EXTENSIONS = {
+  "scrapy.extensions.logstats.LogStats": None,
+  "kafka_scrapy_connect.extensions.KafkaLogStats": 500
+}
+```
+
+An example summary payload will look like:
+```json
+{
+	"pages_crawled": 3,
+	"items_scraped": 30,
+	"avg pages/min": 0.4,
+	"avg pages/hour": 23.78,
+	"avg pages/day": 570.63,
+	"avg items/min": 3.96,
+	"avg items/hour": 237.76,
+	"avg items/day": 5706.3,
+	"successful_request_pct": 100.0,
+	"http_status_counts": "200: 3, 201: 0, 202: 0, 204: 0, 300: 0, 301: 0, 302: 0, 303: 0, 400: 0, 401: 0, 403: 0",
+	"max_memory": 76136448,
+	"elapsed_time": 454.23
 }
 ```

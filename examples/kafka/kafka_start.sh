@@ -26,6 +26,11 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        --stats-topic)
+            STATS_TOPIC="$2"
+            shift
+            shift
+            ;;
         *)
             error "Invalid argument: $1"
             exit 1
@@ -34,9 +39,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check that the arguments were passed correctly
-if [[ -z $INPUT_TOPIC || -z $OUTPUT_TOPIC || -z $ERROR_TOPIC ]]; then
+if [[ -z $INPUT_TOPIC || -z $OUTPUT_TOPIC || -z $ERROR_TOPIC || -z $STATS_TOPIC ]]; then
     error "Can't execute script"
-    warn "Usage: $0 --input-topic inputTopic,1 --output-topic outputTopic,1 --error-topic errorTopic,1"
+    warn "Usage: $0 --input-topic inputTopic,1 --output-topic outputTopic,1 --error-topic errorTopic,1 --stats-topic statsTopic,1"
     exit 1
 fi
 
@@ -54,10 +59,10 @@ validate_topic_format() {
 validate_topic_format "$INPUT_TOPIC"
 validate_topic_format "$OUTPUT_TOPIC"
 validate_topic_format "$ERROR_TOPIC"
+validate_topic_format "$STATS_TOPIC"
 
 # Concatenate topics into one variable
-TOPICS="$INPUT_TOPIC,$OUTPUT_TOPIC,$ERROR_TOPIC"
-
+TOPICS="$INPUT_TOPIC,$OUTPUT_TOPIC,$ERROR_TOPIC,$STATS_TOPIC"
 
 info "Bringing up local kafka cluster"
 docker-compose up -d
@@ -75,6 +80,5 @@ for ((i=0; i<${#TOPIC_PARTITIONS[@]}; i+=2)); do
     PARTITION="${TOPIC_PARTITIONS[i+1]}"
     info "Creating Kafka topic $TOPIC with $PARTITION partition[s]"
 done
-
 
 ./scripts/create_topics.sh --topics $TOPICS

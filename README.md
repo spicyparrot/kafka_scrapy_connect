@@ -146,7 +146,7 @@ EXTENSIONS = {
 }
 ```
 
-An example summary payload will look like:
+An example payload sent to the statistics topic will look like:
 ```json
 {
 	"pages_crawled": 3,
@@ -158,7 +158,7 @@ An example summary payload will look like:
 	"avg items/hour": 237.76,
 	"avg items/day": 5706.3,
 	"successful_request_pct": 100.0,
-	"http_status_counts": "200: 3, 201: 0, 202: 0, 204: 0, 300: 0, 301: 0, 302: 0, 303: 0, 400: 0, 401: 0, 403: 0",
+	"http_status_counts": "200: 3",
 	"max_memory": 76136448,
 	"elapsed_time": 454.23
 }

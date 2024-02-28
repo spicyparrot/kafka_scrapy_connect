@@ -120,13 +120,13 @@ class KafkaSpiderMixin:
         if not messages or len(messages) == 0:
             logging.debug('No messages to process')
             return None
-        logging.info(f"Received batch with {len(messages)} messages.")
+        logging.debug(f"Received batch with {len(messages)} messages.")
         for message in messages:
             result = self.process_kafka_message(message)
             if result is not None:
             #if request_url:
                 url,meta = result
-                logging.info(f'Crawling {url}')
+                logging.debug(f'Crawling {url}')
                 yield Request(url=url, meta=meta,dont_filter=True, errback=self.network_error_cb)
 
     def network_error_cb(self, failure):
@@ -137,7 +137,7 @@ class KafkaSpiderMixin:
         self.publish_failures(self.network_error_topic, payload)
 
     def publish_failures(self, topic, payload):
-        logging.info(f'Publishing failure to {topic}')
+        logging.debug(f'Publishing failure to {topic}')
         self.producer.produce(topic, value=json.dumps(payload))
         self.producer.poll()
 

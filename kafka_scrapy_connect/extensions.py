@@ -99,7 +99,7 @@ class KafkaLogStats:
         }
         logger.info(msg, log_args, extra={"spider": spider})
 
-    def summary_log(self, spider):
+    def summary_log(self, spider,spider_closing=False):
         """
         Publish summary stats to Kafka.
         """
@@ -134,19 +134,23 @@ class KafkaLogStats:
                 "max_memory": self.stats.get_value("memusage/max", 0),
                 "elapsed_time": self.round_value(time.time() - start_time.timestamp())
             }
-            logger.info(f'Publishing summary scrapy statistics to Kafka topic: {self.topic} every {self.summary_interval}s')
-            self.producer.produce(self.topic, key=self.check_eod_rollover(), value=json.dumps(summary_log_args), callback=self.delivery_callback)
+            if spider_closing is False:
+                logger.info(f'Publishing summary scrapy statistics to Kafka topic: {self.topic} every {self.summary_interval}s')
+                self.producer.produce(self.topic, key=self.generate_kafka_key(), value=json.dumps(summary_log_args), callback=self.delivery_callback)
+                # Reset stats
+                self.reset_stats()
+            else:
+                logger.info(f'Spider is closing.... publishing final batch of closing statistics to Kafka topic: {self.topic}')
+                self.producer.produce(self.topic, key=self.generate_kafka_key(True), value=json.dumps(summary_log_args), callback=self.delivery_callback)
             self.producer.poll(0)
             self.producer.flush()
 
-            # Reset stats
-            self.reset_stats()
-
-        # Schedule the summary log to be called at next interval
-        next_summary_time = self.get_next_summary_time()
-        seconds_until_next_summary = (next_summary_time - datetime.datetime.now()).total_seconds()
-        logger.info(f'Next batch of stats will be sent at EOD at {next_summary_time.strftime("%Y-%m-%d %H:%M")} in {seconds_until_next_summary:.0f}s')
-        task.deferLater(reactor, seconds_until_next_summary, self.summary_log, spider)
+        if spider_closing is False:
+            # Schedule the summary log to be called at next interval
+            next_summary_time = self.get_next_summary_time()
+            seconds_until_next_summary = (next_summary_time - datetime.datetime.now()).total_seconds()
+            logger.info(f'Next batch of stats will be sent at EOD at {next_summary_time.strftime("%Y-%m-%d %H:%M")} in {seconds_until_next_summary:.0f}s')
+            task.deferLater(reactor, seconds_until_next_summary, self.summary_log, spider)
 
     def round_value(self, val):
         """
@@ -179,12 +183,15 @@ class KafkaLogStats:
             next_summary_time = next_day.replace(hour=0, minute=0, second=0, microsecond=0)
         return next_summary_time
 
-    def check_eod_rollover(self):
+    def generate_kafka_key(self,process_closing=False):
         """
-        Check if end of day rollover has occurred.
+        Generates a key for the kafka message
         """
-        previous_day = datetime.date.today() - datetime.timedelta(days=1)
-        return previous_day.strftime('%Y-%m-%d')
+        if process_closing is False:
+            previous_day = datetime.date.today() - datetime.timedelta(days=1)
+            return previous_day.strftime('%Y-%m-%d')
+        else:
+            return datetime.datetime.now().strftime('%Y-%m-%d')
 
     def get_response_status_counts(self):
         """
@@ -217,7 +224,7 @@ class KafkaLogStats:
         """
         Handle spider closed signal and publish stats to kafka
         """
-        self.summary_log(spider)
+        self.summary_log(spider,True)
         if self.task and self.task.running:
             self.task.stop()
         if self.summary_task and self.summary_task.running:

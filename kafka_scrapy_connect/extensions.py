@@ -183,15 +183,8 @@ class KafkaLogStats:
         """
         Check if end of day rollover has occurred.
         """
-        current_datetime = datetime.datetime.now()
-        interval = self.summary_interval
-        key_format = '%Y-%m-%d'
-        if current_datetime.time() < datetime.time(hour=0):
-            dd = datetime.date.today() - datetime.timedelta(days=1)
-        else:
-            dd = datetime.date.today()
-        stats_date = dd.strftime(key_format)
-        return stats_date
+        previous_day = datetime.date.today() - datetime.timedelta(days=1)
+        return previous_day.strftime('%Y-%m-%d')
 
     def get_response_status_counts(self):
         """

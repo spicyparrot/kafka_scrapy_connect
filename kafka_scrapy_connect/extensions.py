@@ -7,6 +7,7 @@ import json
 from twisted.internet import task, reactor
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
+from scrapy.utils.serialize import ScrapyJSONEncoder
 from confluent_kafka import Producer as KafkaProducer
 
 logger = logging.getLogger(__name__)
@@ -105,43 +106,19 @@ class KafkaLogStats:
         """
         items = self.stats.get_value("item_scraped_count", 0)
         pages = self.stats.get_value("response_received_count", 0)
-        requests = self.stats.get_value("downloader/request_count", 0)
-        responses = self.stats.get_value("downloader/response_count", 0)
         if items == 0 and pages == 0:
-            logger.info("No stats available to publish.")
+            logger.info("No stats to publish")
         else:
-            start_time = self.stats.get_value("start_time")
-            self.pagesprev, self.itemsprev = pages, items
-            status_counts = self.get_response_status_counts()
-            status_counts_str = ", ".join([f"{key}: {value}" for key, value in status_counts.items()])
-            # Calculate the percentage of scraped items for the total number of crawled
-            if requests != 0:
-                scraped_percentage = (responses / requests) * 100
-            else:
-                scraped_percentage = 0
-            elapsed_time = round(time.time() - start_time.timestamp(), 3)
-            summary_log_args = {
-                "pages_crawled": pages,
-                "items_scraped": items,
-                "avg pages/min":  self.round_value((pages / elapsed_time) * 60),
-                "avg pages/hour": self.round_value((pages / elapsed_time) * 3600),
-                "avg pages/day":  self.round_value((pages / elapsed_time) * 86400),
-                "avg items/min":  self.round_value((items / elapsed_time) * 60),
-                "avg items/hour": self.round_value((items / elapsed_time) * 3600),
-                "avg items/day":  self.round_value((items / elapsed_time) * 86400),
-                "successful_request_percentage": scraped_percentage,
-                "http_status_counts": status_counts_str,
-                "max_memory": self.stats.get_value("memusage/max", 0),
-                "elapsed_time": self.round_value(time.time() - start_time.timestamp())
-            }
+            encoder = ScrapyJSONEncoder()
+            stats = encoder.encode(self.stats.get_stats())
             if spider_closing is False:
                 logger.info(f'Publishing summary scrapy statistics to Kafka topic: {self.topic} every {self.summary_interval}s')
-                self.producer.produce(self.topic, key=self.generate_kafka_key(), value=json.dumps(summary_log_args), callback=self.delivery_callback)
+                self.producer.produce(self.topic, key=self.generate_kafka_key(), value=stats, callback=self.delivery_callback)
                 # Reset stats
                 self.reset_stats()
             else:
                 logger.info(f'Spider is closing.... publishing final batch of closing statistics to Kafka topic: {self.topic}')
-                self.producer.produce(self.topic, key=self.generate_kafka_key(True), value=json.dumps(summary_log_args), callback=self.delivery_callback)
+                self.producer.produce(self.topic, key=self.generate_kafka_key(True), value=stats, callback=self.delivery_callback)
             self.producer.poll(0)
             self.producer.flush()
 

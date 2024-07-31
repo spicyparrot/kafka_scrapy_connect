@@ -3,7 +3,7 @@ from scrapy import signals
 from scrapy.http import Request
 from scrapy.exceptions import DontCloseSpider
 from scrapy.spiders import Spider
-from confluent_kafka import Consumer, KafkaException, Producer
+from confluent_kafka import Consumer, KafkaException, KafkaError, Producer
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError, TCPTimedOutError
@@ -51,6 +51,7 @@ class KafkaSpiderMixin:
                     # If decoding succeeds, it's a JSON object
                     if isinstance(json_obj, dict) and 'url' in json_obj:
                         url = json_obj['url']
+                        meta = json_obj.get("meta", {})
                         if self.is_valid_url(url):
                             logging.debug(f"Received valid URL => {url}")
                             return url, meta

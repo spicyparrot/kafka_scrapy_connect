@@ -5,6 +5,7 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - "**" # matches every branch  (!trunk removed to ensure main branch SonarCloud analysis is performed)

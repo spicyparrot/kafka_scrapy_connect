@@ -3,7 +3,7 @@ from scrapy import signals
 from scrapy.http import Request
 from scrapy.exceptions import DontCloseSpider
 from scrapy.spiders import Spider
-from confluent_kafka import Consumer, KafkaException, Producer
+from confluent_kafka import Consumer, KafkaException, Producer, KafkaError
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError, TCPTimedOutError
